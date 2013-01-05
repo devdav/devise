@@ -18,7 +18,8 @@ Warden::Manager.after_set_user do |record, warden, options|
       throw :warden, :scope => scope, :message => :timeout
     end
 
-    unless env['devise.skip_trackable']
+    # DE 2011/08/15 PATCH: only update the session for non-'silent', non-xhr requests
+    if !env['devise.skip_trackable'] && ((!warden.request.xhr? || warden.request.params[:silent].blank?) rescue true)
       warden.session(scope)['last_request_at'] = Time.now.utc
     end
   end
